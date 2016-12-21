@@ -3,11 +3,12 @@
 	for dealing with files from the Nature Conservancy Kaggle Competition
 """
 from glob import glob
+from random import sample as sampler
 
 DATA_FOLDER = '../data/'
 ALL_FISH_CATEGORIES = ['ALB', 'BET', 'DOL', 'LAG', 'NoF', 'OTHER', 'SHARK', 'YFT']
 
-def get_image_path(fish, sample=-1, folder='train'):
+def get_image_paths(fish, sample=-1, folder='train'):
 	"""
 		Returns image paths for a class of fish
 		@params:
@@ -20,6 +21,6 @@ def get_image_path(fish, sample=-1, folder='train'):
 	assert fish in ALL_FISH_CATEGORIES, 'unknown fish requested.'
 
 	FISH_PATH = DATA_FOLDER+folder+'/'+fish+'/*.jpg'
-	return glob(FISH_PATH)
-
+	all_img_urls = glob(FISH_PATH)
+	return sampler(all_img_urls, sample) if sample > 0 else all_img_urls
 
