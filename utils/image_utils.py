@@ -5,9 +5,9 @@
 import numpy as np
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
+from scipy import misc
 from matplotlib.patches import Rectangle
 from sklearn_theano.feature_extraction import OverfeatLocalizer
-from io import ALL_FISH_CATEGORIES
 from sklearn.mixture import GMM
 
 # These are the labels that seem to pick out most of the fish
@@ -32,6 +32,7 @@ ALL_LABELS = ['grey whale, gray whale, devilfish, Eschrichtius gibbosus, Eschric
  'tiger shark, Galeocerdo cuvieri',
  'hammerhead, hammerhead shark']
 
+AUTO_RESIZE_DEFAULT = (720, 1028) # most common image size in the dataset
 
 def read_image(src):
 	return mpimg.imread(src)
@@ -39,6 +40,8 @@ def read_image(src):
 def imshow(img):
 	plt.imshow(img)
 
+def imresize(img, size=AUTO_RESIZE_DEFAULT):
+	return misc.imresize(img, size, interp='nearest')
 
 def convert_gmm_to_box(gmm, color='blue', alpha=0.6, points_only=True):
 	"""
