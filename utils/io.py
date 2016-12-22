@@ -12,7 +12,7 @@ from keras.utils import np_utils
 DATA_FOLDER = '../data/'
 ALL_FISH_CATEGORIES = ['ALB', 'BET', 'DOL', 'LAG', 'NoF', 'OTHER', 'SHARK', 'YFT']
 
-def get_image_paths(fish, sample=-1, folder='train'):
+def get_image_paths(fish, sample=-1, folder=DATA_FOLDER+'train'):
 	"""
 		Returns image paths for a class of fish
 		@params:
@@ -24,7 +24,8 @@ def get_image_paths(fish, sample=-1, folder='train'):
 	"""
 	assert fish in ALL_FISH_CATEGORIES, 'unknown fish requested.'
 
-	FISH_PATH = DATA_FOLDER+folder+'/'+fish+'/*.jpg'
+	FISH_PATH = folder+'/'+fish+'/*.jpg'
+	print 'loading from:' + FISH_PATH
 	all_img_urls = glob(FISH_PATH)
 	try:
 		return sampler(all_img_urls, sample) if sample > 0 else all_img_urls
@@ -44,7 +45,7 @@ def load_imgs_from_paths(paths, auto_resize=True):
 	return imgs
 
 
-def create_test_train_split(categories=ALL_FISH_CATEGORIES, split=0.8, samples=100, auto_resize=False):
+def create_test_train_split(folder=DATA_FOLDER+'train', categories=ALL_FISH_CATEGORIES, split=0.8, samples=100, auto_resize=False):
 	"""
 		Loads a dataset into memory pre-split into train and validation
 		@params:
@@ -58,7 +59,7 @@ def create_test_train_split(categories=ALL_FISH_CATEGORIES, split=0.8, samples=1
 	X, X_train, X_val = {}, {}, {}
 
 	for fish in categories:
-		paths = get_image_paths(fish, sample=samples)
+		paths = get_image_paths(fish, sample=samples, folder=folder)
 
 		imgs = load_imgs_from_paths(paths, auto_resize=auto_resize)
 
@@ -88,7 +89,7 @@ def dataset_dict_to_array(X):
 
 	return np.asarray(x, dtype=np.uint8), np_utils.to_categorical(Y)
 
-def load_test_data(test_folder='test_stg1', auto_resize=True):
+def load_test_data(test_folder=DATA_FOLDER+'test_stg1', auto_resize=True):
 	"""	
 		Loads the test data
 		@params:
@@ -97,7 +98,7 @@ def load_test_data(test_folder='test_stg1', auto_resize=True):
 			test_set: np.array of size N*auto_resize
 			paths: the list of file names
 	"""
-	paths = glob(DATA_FOLDER+test_folder+'/*.jpg')
+	paths = glob(test_folder+'/*.jpg')
 	imgs = load_imgs_from_paths(paths, auto_resize=auto_resize)
 	
 	test_set = np.array(imgs)
