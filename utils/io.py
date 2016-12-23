@@ -103,7 +103,7 @@ def load_test_data(test_folder=DATA_FOLDER+'test_stg1', auto_resize=True):
 	
 	test_set = np.array(imgs)
 	print test_set.shape
-	paths = [path.split(DATA_FOLDER+test_folder+'/')[1] for path in paths]
+	paths = [path.split('/')[-1] for path in paths]
 
 	return test_set, paths
 
@@ -121,4 +121,4 @@ def save_predictions(test_filenames, predictions, out_filename='submission.csv',
 	submission = pd.DataFrame(predictions, columns=ALL_FISH_CATEGORIES)
 	submission.insert(0, 'image', test_filenames)
 	submission.to_csv(location+out_filename, index=False)
-	print 'Predictions saved to '+location+submission
+	print 'Predictions saved to '+location+out_filename
