@@ -8,7 +8,8 @@ def add_module_paths():
 	
 from utils import io
 from sklearn.metrics import log_loss
-from keras.callbacks import EarlyStopping
+from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.models import load_model
 
 class FishNet(object):
 	def __init__(self, model, auto_resize=(90, 160)):
@@ -20,6 +21,7 @@ class FishNet(object):
 		self.trained = False
 		self.compiled = False
 		self.datasets = None
+		self.model_name = 'FishNet'
 
 	def init(self, loss, optimizer, metrics=['categorical_crossentropy', 'categorical_accuracy'], **kwargs):
 		"""
@@ -44,7 +46,7 @@ class FishNet(object):
 		return self.datasets['full'], self.datasets['training'], self.datasets['validation']
 
 
-	def train(self, x=None, y=None, epochs=1, callbacks=[], **kwargs):
+	def train(self, x=None, y=None, epochs=1, callbacks=[], batch_size=32, **kwargs):
 		"""
 			Fits the model using x and y for epochs
 		"""
@@ -54,8 +56,9 @@ class FishNet(object):
 			else:
 				x, y = self.datasets['training']
 
-		callbacks = callbacks + [EarlyStopping(patience=3, verbose=1)]
-		self.model.fit(x, y, nb_epoch=epochs, validation_split=0.1, batch_size=32, shuffle=True, verbose=1, callbacks=callbacks, **kwargs)
+		callbacks = callbacks + [ EarlyStopping(patience=2, verbose=1),
+								ModelCheckpoint('./'+self.model_name+'weights.{epoch:02d}-{val_loss:.2f}.hdf5', verbose=1, save_best_only=True)]
+		self.model.fit(x, y, nb_epoch=epochs, validation_split=0.1, batch_size=batch_size, shuffle=True, verbose=1, callbacks=callbacks, **kwargs)
 		self.trained = True
 
 	def evaluate(self, x=None, y=None):
@@ -69,16 +72,24 @@ class FishNet(object):
 			else:
 				x, y = self.datasets['validation']
 
-		preds = model.predict(x, verbose=1)
+		preds = self.model.predict(x, verbose=1)
 		print "Validation Log Loss: "+str(log_loss(y, preds))
 
 	def test(self, file_name='submission.csv', folder='./data/test_stg1'):
 		"""
 			Runs model on a test set to create a submission for kaggle
 		"""
-		x_test, paths = io.load_test_data(auto_resize=self.auto_resize, folder=test_folder)
+		x_test, paths = io.load_test_data(auto_resize=self.auto_resize, test_folder=folder)
 		preds = self.model.predict(x_test, verbose=1)
 		io.save_predictions(paths, preds, out_filename=file_name)
+
+	@staticmethod
+	def load(self, file_name, auto_resize=(90,160)):
+		model = load_model(file_name)
+		fnn = FishNet(model, auto_resize=auto_resize)
+		fnn.trained = True
+		fnn.compiled = True
+		return fnn
 
 
 	

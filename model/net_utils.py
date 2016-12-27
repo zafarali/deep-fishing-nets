@@ -3,7 +3,7 @@ import os, sys
 def add_module_paths():
 	sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 	
-
+import numpy as np
 import keras.layers as layers
 from keras import backend as K
 
@@ -21,7 +21,8 @@ def fish_out(model):
 	return model
 
 def center_normalize(x):
-	x = np.float(x) / 255.0
+	x = x / 255.0
+	print x
 	return (x - K.mean(x)) / K.std(x)
 
 W, H, CH = (90,160,3)
