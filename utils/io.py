@@ -33,6 +33,11 @@ def get_image_paths(fish, sample=-1, folder=DATA_FOLDER+'train'):
 		return all_img_urls
 
 def load_imgs_from_paths(paths, auto_resize=True):
+	
+	# shuffle paths so that when we do test/train splits
+	# we get shuffled distributions
+	paths = sampler(paths, len(paths))
+
 	if type(auto_resize) is tuple and len(auto_resize) == 2:
 		# resize to specified value
 		imgs = [ imresize(read_image(path), size=auto_resize) for path in paths ]
@@ -80,7 +85,7 @@ def dataset_dict_to_array(X):
 	"""
 	x = []
 	Y = np.zeros(sum([ len(xi) for xi in X.values() ]))
-	for i, label in enumerate(X.keys()):
+	for i, label in enumerate(sorted(X.keys())):
 		start = len(x) # the starting length of x
 		x.extend(X[label])
 		end = len(x) # the ending length of x
@@ -102,7 +107,6 @@ def load_test_data(test_folder=DATA_FOLDER+'test_stg1', auto_resize=True):
 	imgs = load_imgs_from_paths(paths, auto_resize=auto_resize)
 	
 	test_set = np.array(imgs)
-	print test_set.shape
 	paths = [path.split('/')[-1] for path in paths]
 
 	return test_set, paths

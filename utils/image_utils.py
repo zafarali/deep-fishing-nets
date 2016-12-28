@@ -35,7 +35,7 @@ ALL_LABELS = ['grey whale, gray whale, devilfish, Eschrichtius gibbosus, Eschric
 AUTO_RESIZE_DEFAULT = (720, 1028) # most common image size in the dataset
 
 def read_image(src):
-	return mpimg.imread(src)
+	return mpimg.imread(src) 
 
 def imshow(img):
 	plt.imshow(img)

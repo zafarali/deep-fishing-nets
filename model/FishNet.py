@@ -6,7 +6,10 @@ import os, sys
 def add_module_paths():
 	sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 	
+import numpy as np
 from utils import io
+from utils.image_utils import imresize
+from utils.inflate import generate_extra_data
 from sklearn.metrics import log_loss
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.models import load_model
@@ -75,6 +78,31 @@ class FishNet(object):
 		preds = self.model.predict(x, verbose=1)
 		print "Validation Log Loss: "+str(log_loss(y, preds))
 
+	def load_inflated(preinflated_X=None, preinflated_Y=None, n=None):
+
+		X_loaded, Y_loaded = self.datasets['training']
+
+		if preinflated_X is None and preinflated_Y is None:
+			if n is None:
+				raise ValueError('If no file is specified, n cannot be none.')
+			
+			# inflate the current dataset
+			X, Y = generate_extra_data(X=X_loaded, Y=Y_loaded,n=n)
+
+		else:
+			X = np.load(preinflated_X)
+			Y = np.load(preinflated_Y)
+
+		if X_conc.shape[1:] != self.auto_resize:
+			# images need to be resized:
+			for i in range(X_conc.shape[0]):
+				X_conc[i, :] = imresize(X_conc[i, :], size=self.auto_resize)
+		X_conc = np.concatenate((X_loaded, X), axis=0)
+		Y_conc = np.concatenate((Y_loaded, Y), axis=0)
+
+		self.datasets['training'] = (X_conc, Y_conc)
+
+
 	def test(self, file_name='submission.csv', folder='./data/test_stg1'):
 		"""
 			Runs model on a test set to create a submission for kaggle
@@ -90,6 +118,14 @@ class FishNet(object):
 		fnn.trained = True
 		fnn.compiled = True
 		return fnn
+
+	def load_weights(self, file_name):
+		"""
+			After creating a model, this function loads weights from a file.
+		"""
+		self.model.load_weights(file_name)
+		self.compiled = True
+		self.trained = True
 
 
 	
